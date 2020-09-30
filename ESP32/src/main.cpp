@@ -14,6 +14,8 @@
 #include "SystemFont5x7.h"
 #include "Arial_black_16.h"
 #include <SoftwareSerial.h>
+#include <DFRobotDFPlayerMini.h>
+#include <HardwareSerial.h>
 #define DISPLAYS_ACROSS 1
 #define DISPLAYS_DOWN 1
 #define SSID "y"
@@ -23,15 +25,13 @@
 #define latchpin 17
 #define ledpin 16
 #define num_ics 8
-#define rx_pin    39
-#define tx_pin    38
+#define rx_pin 16
+#define tx_pin 4
 Display daisy(clockpin, latchpin, datapin, num_ics);
-Display tes(clockpin, latchpin, datapin);
 RTC_DS3231 rtc;
 TaskHandle_t task1;
 TaskHandle_t tasknetwork;
 TaskHandle_t taskble;
-// TaskHandle_t network;
 void scanDmd(void *parameter);
 void displayClock(void *parameter);
 void segment(void *parameter);
@@ -44,16 +44,33 @@ int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh;
 WaktuSholat waktu;
 BleSetup ble("jam sholat");
 DMD dmd(DISPLAYS_ACROSS, DISPLAYS_DOWN);
-SoftwareSerial mp3(rx_pin,tx_pin);
+SoftwareSerial mp3(rx_pin, tx_pin);
+DFRobotDFPlayerMini player;
 void setup()
 {
   Serial.begin(115200);
-
+  Serial2.begin(9600,SERIAL_8N1,rx_pin,tx_pin);
   if (!SPIFFS.begin(true))
   {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+    // Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
+  if (player.begin(Serial2))
+  {
+    Serial.println("OK");
+    player.volume(30);
+    player.play(1);
+  }
+  else
+  {
+    Serial.println("Connecting to DFPlayer Mini failed!");
+  }
+  while (true)
+  {
+    Serial2.println("Hallo");
+    delay(1000);
+  }
+
   xTaskCreatePinnedToCore(
       scanDmd,
       "scan SPI",
@@ -70,14 +87,14 @@ void setup()
       1,
       &task1,
       1);
-  xTaskCreatePinnedToCore(
-      segment,
-      "7 Segment",
-      5000,
-      NULL,
-      1,
-      &task1,
-      0);
+  // xTaskCreatePinnedToCore(
+  //     segment,
+  //     "7 Segment",
+  //     5000,
+  //     NULL,
+  //     1,
+  //     &task1,
+  //     0);
   xTaskCreatePinnedToCore(
       getRtc,
       "GetRtc",
@@ -86,22 +103,22 @@ void setup()
       1,
       &task1,
       0);
-  xTaskCreatePinnedToCore(
-      connectNetwork,
-      "Network",
-      10000,
-      NULL,
-      1,
-      &tasknetwork,
-      1);
-  xTaskCreatePinnedToCore(
-      bleService,
-      "BLE",
-      5000,
-      NULL,
-      1,
-      &taskble,
-      1);
+  // xTaskCreatePinnedToCore(
+  //     connectNetwork,
+  //     "Network",
+  //     10000,
+  //     NULL,
+  //     1,
+  //     &tasknetwork,
+  //     1);
+  // xTaskCreatePinnedToCore(
+  //     bleService,
+  //     "BLE",
+  //     5000,
+  //     NULL,
+  //     1,
+  //     &taskble,
+  //     1);
   Serial.println("Total heap: " + (String)ESP.getHeapSize());
   Serial.println("Free heap: " + (String)ESP.getFreeHeap());
   Serial.println("Total PSRAM: " + (String)ESP.getPsramSize());
@@ -162,7 +179,7 @@ void getRtc(void *parameter)
     hour = now.hour();
     minute = now.minute();
     second = now.second();
-    Serial.println((String)day+"-"+(String)month+"-"+(String)year);
+    Serial.println((String)day + "-" + (String)month + "-" + (String)year);
     Serial.println((String)hour + ":" + (String)minute + ":" + (String)second);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -181,10 +198,10 @@ void displayClock(void *parameter)
   dmd.selectFont(System5x7);
   String h;
   String m;
-  String monthOfYear[13] = {"Jan", "Feb", "Mar", "Apr","Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"};
+  String monthOfYear[13] = {"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"};
   for (;;)
   {
-    String date = String(day) + " " + monthOfYear[month-1] + " " + (String)year;
+    String date = String(day) + " " + monthOfYear[month - 1] + " " + (String)year;
     hour < 10 ? h = "0" + (String)hour : h = (String)hour;
     minute < 10 ? m = "0" + (String)minute : m = (String)minute;
     String hourminute = h + ":" + m;

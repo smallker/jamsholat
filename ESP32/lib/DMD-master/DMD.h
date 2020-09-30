@@ -47,9 +47,6 @@ LED Panel Layout in RAM
 // #include <avr/pgmspace.h>
 #include <SPI.h>
 
-// ######################################################################################################################
-// ######################################################################################################################
-#warning CHANGE THESE TO SEMI-ADJUSTABLE PIN DEFS!
 //Arduino pins used for the display connection
 #define PIN_DMD_nOE       13    // D9 active low Output Enable, setting this low lights all the LEDs in the selected rows. Can pwm it at very high frequency for brightness control.
 #define PIN_DMD_A         27   // D6
