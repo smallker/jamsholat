@@ -13,7 +13,6 @@
 #include <DMD.h>
 #include "SystemFont5x7.h"
 #include "Arial_black_16.h"
-#include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
 #include <HardwareSerial.h>
 #define DISPLAYS_ACROSS 1
@@ -44,7 +43,6 @@ int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh;
 WaktuSholat waktu;
 BleSetup ble("jam sholat");
 DMD dmd(DISPLAYS_ACROSS, DISPLAYS_DOWN);
-SoftwareSerial mp3(rx_pin, tx_pin);
 DFRobotDFPlayerMini player;
 void setup()
 {
@@ -52,7 +50,7 @@ void setup()
   Serial2.begin(9600,SERIAL_8N1,rx_pin,tx_pin);
   if (!SPIFFS.begin(true))
   {
-    // Serial.println("An Error has occurred while mounting SPIFFS");
+    Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
   if (player.begin(Serial2))
