@@ -8,7 +8,14 @@
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 #include <config.h>
-#include "main.h"
+#include "ble.h"
+#include <SPI.h>
+#include <DMD.h>
+#include "SystemFont5x7.h"
+#include "Arial_black_16.h"
+#include <SoftwareSerial.h>
+#define DISPLAYS_ACROSS 1
+#define DISPLAYS_DOWN 1
 #define SSID "y"
 #define PASS "11111111"
 #define datapin 26
@@ -16,6 +23,8 @@
 #define latchpin 17
 #define ledpin 16
 #define num_ics 8
+#define rx_pin    39
+#define tx_pin    38
 Display daisy(clockpin, latchpin, datapin, num_ics);
 Display tes(clockpin, latchpin, datapin);
 RTC_DS3231 rtc;
@@ -23,14 +32,19 @@ TaskHandle_t task1;
 TaskHandle_t tasknetwork;
 TaskHandle_t taskble;
 // TaskHandle_t network;
+void scanDmd(void *parameter);
+void displayClock(void *parameter);
 void segment(void *parameter);
 void getRtc(void *parameter);
 void connectNetwork(void *parameter);
 void bleService(void *parameter);
 volatile int year, month, day, hour, minute, second;
 int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh;
+
 WaktuSholat waktu;
 BleSetup ble("jam sholat");
+DMD dmd(DISPLAYS_ACROSS, DISPLAYS_DOWN);
+SoftwareSerial mp3(rx_pin,tx_pin);
 void setup()
 {
   Serial.begin(115200);
@@ -40,18 +54,22 @@ void setup()
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-
-  // uint8_t n = 0b00000001;
-  // uint8_t num[] = {num0, num1, num2, num3, num4, num5, num6, num7, num8, num9};
-
-  // while (true)
-  // {
-  //   for(int i =0; i< sizeof(num); i ++){
-  //     tes.displayBit(num[i]);
-  //     delay(1000);
-  //   }
-  // }
-
+  xTaskCreatePinnedToCore(
+      scanDmd,
+      "scan SPI",
+      5000,
+      NULL,
+      1,
+      &task1,
+      0);
+  xTaskCreatePinnedToCore(
+      displayClock,
+      "display clock",
+      2000,
+      NULL,
+      1,
+      &task1,
+      1);
   xTaskCreatePinnedToCore(
       segment,
       "7 Segment",
@@ -144,11 +162,55 @@ void getRtc(void *parameter)
     hour = now.hour();
     minute = now.minute();
     second = now.second();
+    Serial.println((String)day+"-"+(String)month+"-"+(String)year);
     Serial.println((String)hour + ":" + (String)minute + ":" + (String)second);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
-
+void scanDmd(void *parameter)
+{
+  dmd.clearScreen(true);
+  for (;;)
+  {
+    dmd.scanDisplayBySPI();
+    vTaskDelay(5 / portTICK_PERIOD_MS);
+  }
+}
+void displayClock(void *parameter)
+{
+  dmd.selectFont(System5x7);
+  String h;
+  String m;
+  String monthOfYear[13] = {"Jan", "Feb", "Mar", "Apr","Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"};
+  for (;;)
+  {
+    String date = String(day) + " " + monthOfYear[month-1] + " " + (String)year;
+    hour < 10 ? h = "0" + (String)hour : h = (String)hour;
+    minute < 10 ? m = "0" + (String)minute : m = (String)minute;
+    String hourminute = h + ":" + m;
+    dmd.drawMarquee(date.c_str(), sizeof(date) - 1, (32 * DISPLAYS_ACROSS) - 1, 8);
+    long start = millis();
+    long timer = start;
+    boolean ret = false;
+    int del = 100;
+    while (!ret)
+    {
+      if ((timer + del) < millis())
+      {
+        ret = dmd.stepMarquee(-1, 0);
+        timer = millis();
+        for (byte x = 0; x < DISPLAYS_ACROSS; x++)
+        {
+          for (byte y = 0; y < DISPLAYS_DOWN; y++)
+          {
+            dmd.drawString(2 + (32 * x), 0 + (16 * y), hourminute.c_str(), 5, GRAPHICS_NORMAL);
+          }
+        }
+      }
+    }
+    vTaskDelay(1000);
+  }
+}
 void connectNetwork(void *parameter)
 {
   pinMode(ledpin, OUTPUT);

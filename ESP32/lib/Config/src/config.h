@@ -28,6 +28,7 @@ public:
     void setschedule(String config);
     int *schedule(String param, int arr[]);
     void setApiUrl(int city, int year, int month, int day);
+    void parseConfig(String json);
     String getApiUrl();
     String retrieveConfig();
 };
