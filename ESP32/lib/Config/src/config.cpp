@@ -90,7 +90,7 @@ String Config::getApiUrl()
     return buff;
 }
 
-String Config::retrieveConfig()
+String Config::rawSchedule()
 {
     File file = SPIFFS.open("/sholat.txt");
     String buff;
@@ -103,6 +103,37 @@ String Config::retrieveConfig()
         buff = file.readString();
     }
     file.close();
-    Serial.println("jadwal sholat dibaca");
     return buff;
+}
+
+String Config::rawConfig()
+{
+    File file = SPIFFS.open("/config.txt");
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    return buff;
+}
+String Config::retrieveConfig()
+{
+    String buff;
+    StaticJsonDocument<1000> json;
+    // json["jadwal"] = rawSchedule();
+    json["config"] = rawConfig();
+    serializeJson(json, buff);
+    return buff;
+}
+
+void Config::parseConfig(String param)
+{
+    DynamicJsonDocument jadwal(1024);
+    deserializeJson(jadwal, param);
+    int config = jadwal["config"];
 }

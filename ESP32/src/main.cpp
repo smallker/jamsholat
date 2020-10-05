@@ -22,7 +22,7 @@
 #define datapin 26
 #define clockpin 25
 #define latchpin 17
-#define ledpin 16
+#define ledpin 0
 #define num_ics 8
 #define rx_pin 16
 #define tx_pin 4
@@ -38,7 +38,7 @@ void getRtc(void *parameter);
 void connectNetwork(void *parameter);
 void bleService(void *parameter);
 volatile int year, month, day, hour, minute, second;
-int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh;
+int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh, *dhuha;
 
 WaktuSholat waktu;
 BleSetup ble("jam sholat");
@@ -47,27 +47,35 @@ DFRobotDFPlayerMini player;
 void setup()
 {
   Serial.begin(115200);
-  Serial2.begin(9600,SERIAL_8N1,rx_pin,tx_pin);
+  Serial2.begin(9600, SERIAL_8N1, rx_pin, tx_pin);
   if (!SPIFFS.begin(true))
   {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-  if (player.begin(Serial2))
-  {
-    Serial.println("OK");
-    player.volume(30);
-    player.play(1);
-  }
-  else
-  {
-    Serial.println("Connecting to DFPlayer Mini failed!");
-  }
-  while (true)
-  {
-    Serial2.println("Hallo");
-    delay(1000);
-  }
+
+  // String config = "{\"adzan\":20,\"iqomah\":21,\"murrotal\":15}";
+  // File file = SPIFFS.open("/config.txt", FILE_WRITE);
+  // if (file.print(config))
+  // {
+  //   Serial.println("Config was written");
+  // }
+  // file.close();
+  // if (player.begin(Serial2))
+  // {
+  //   Serial.println("OK");
+  //   player.volume(30);
+  //   player.play(1);
+  // }
+  // else
+  // {
+  //   Serial.println("Connecting to DFPlayer Mini failed!");
+  // }
+  // while (true)
+  // {
+  //   Serial2.println("Hallo");
+  //   delay(1000);
+  // }
 
   xTaskCreatePinnedToCore(
       scanDmd,
@@ -85,14 +93,14 @@ void setup()
       1,
       &task1,
       1);
-  // xTaskCreatePinnedToCore(
-  //     segment,
-  //     "7 Segment",
-  //     5000,
-  //     NULL,
-  //     1,
-  //     &task1,
-  //     0);
+  xTaskCreatePinnedToCore(
+      segment,
+      "7 Segment",
+      5000,
+      NULL,
+      1,
+      &task1,
+      0);
   xTaskCreatePinnedToCore(
       getRtc,
       "GetRtc",
@@ -101,22 +109,22 @@ void setup()
       1,
       &task1,
       0);
-  // xTaskCreatePinnedToCore(
-  //     connectNetwork,
-  //     "Network",
-  //     10000,
-  //     NULL,
-  //     1,
-  //     &tasknetwork,
-  //     1);
-  // xTaskCreatePinnedToCore(
-  //     bleService,
-  //     "BLE",
-  //     5000,
-  //     NULL,
-  //     1,
-  //     &taskble,
-  //     1);
+  xTaskCreatePinnedToCore(
+      connectNetwork,
+      "Network",
+      10000,
+      NULL,
+      1,
+      &tasknetwork,
+      1);
+  xTaskCreatePinnedToCore(
+      bleService,
+      "BLE",
+      5000,
+      NULL,
+      1,
+      &taskble,
+      1);
   Serial.println("Total heap: " + (String)ESP.getHeapSize());
   Serial.println("Free heap: " + (String)ESP.getFreeHeap());
   Serial.println("Total PSRAM: " + (String)ESP.getPsramSize());
@@ -141,6 +149,8 @@ void segment(void *parameter)
   isya = config.schedule(waktu.isya, waktu._isya);
   imsak = config.schedule(waktu.imsak, waktu._imsak);
   subuh = config.schedule(waktu.subuh, waktu._subuh);
+  dhuha = config.schedule(waktu.dhuha, waktu._dhuha);
+
   uint8_t arr1[] = {0x01, num[dzuhur[0] / 10], 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, num4, 0x01, num[dzuhur[0] / 10]};    // segment pertama
   uint8_t arr2[] = {0x02, _num[dzuhur[0] % 10], 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, _num5, 0x02, _num[dzuhur[0] % 10]}; // segment kedua
   uint8_t arr3[] = {0x04, num[dzuhur[1] / 10], 0x04, 0x01, 0x04, 0x01, 0x04, 0x01, 0x04, num6, 0x04, num[dzuhur[1] / 10]};    // segment ketiga
@@ -230,22 +240,18 @@ void connectNetwork(void *parameter)
 {
   pinMode(ledpin, OUTPUT);
   WiFi.begin(SSID, PASS);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    digitalWrite(ledpin, HIGH);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    digitalWrite(ledpin, LOW);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    Serial.print(". ");
-  }
-  Serial.println("Wifi Connected");
   for (;;)
   {
-    digitalWrite(ledpin, HIGH);
-    if (hour == 1 && minute == 39 && second < 10)
+    if (WiFi.status() != WL_CONNECTED)
     {
-      break;
+      digitalWrite(ledpin, LOW);
+      vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
+    digitalWrite(ledpin, HIGH);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    if (hour == 1 && minute == 39 && second < 10)
+      break;
+    // if(WiFi.status() == WL_CONNECTED) break;
   }
   vTaskDelay(10000);
   Config config;

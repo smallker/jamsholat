@@ -1,0 +1,26 @@
+{
+    "config": 2,
+    "reboot":false,
+    "jadwal": {
+        "status": "ok",
+        "query": {
+            "format": "json",
+            "kota": "735",
+            "tanggal": "2020-09-25"
+        },
+        "jadwal": {
+            "status": "ok",
+            "data": {
+                "ashar": "14:43",
+                "dhuha": "05:50",
+                "dzuhur": "11:33",
+                "imsak": "04:01",
+                "isya": "18:45",
+                "maghrib": "17:37",
+                "subuh": "04:11",
+                "tanggal": "Jumat, 25 Sep 2020",
+                "terbit": "05:24"
+            }
+        }
+    }
+}

@@ -12,17 +12,21 @@ struct WaktuSholat
     String isya = "isya";
     String imsak = "imsak";
     String subuh = "subuh";
+    String dhuha = "dhuha";
     int _dzuhur[2];
     int _ashar[2];
     int _maghrib[2];
     int _isya[2];
     int _imsak[2];
     int _subuh[2];
+    int _dhuha[2];
 };
 class Config
 {
 private:
     String getschedule(String param);
+    String rawSchedule();
+    String rawConfig();
 public:
     void setclock(String config);
     void setschedule(String config);
