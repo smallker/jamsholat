@@ -39,7 +39,10 @@ class _MenuPageState extends State<MenuPage> {
                               Text('Sambungan ke perangkat ini akan terputus'),
                           confirm: FlatButton(
                             child: Text('Putus'),
-                            onPressed: () => BleService.disconnect(ble.device),
+                            onPressed: () =>
+                                BleService.disconnect(ble.device).then(
+                              (_) => Get.back(),
+                            ),
                           ),
                           cancel: FlatButton(
                             child: Text('Batal'),

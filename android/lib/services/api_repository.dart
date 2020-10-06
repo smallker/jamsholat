@@ -16,12 +16,13 @@ class ApiRepository {
     ctl.updateList(result);
   }
 
-  static getschedule() async {
+  static getschedule({int cityId}) async {
     final String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final city = Get.put(CityListCtl());
     final pray = Get.put(PrayCtl());
-    var url =
-        'https://api.banghasan.com/sholat/format/json/jadwal/kota/${city.kota.id}/tanggal/$date';
+    var url = cityId.isNull
+        ? 'https://api.banghasan.com/sholat/format/json/jadwal/kota/${city.kota.id}/tanggal/$date'
+        : 'https://api.banghasan.com/sholat/format/json/jadwal/kota/$cityId/tanggal/$date';
     var response = await http.get(url);
     try {
       var result = PraySchedule.fromJson(json.decode(response.body));

@@ -2,10 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_template/controller/ble_scan_ctl.dart';
+import 'package:flutter_template/services/api_repository.dart';
 import 'package:flutter_template/services/ble_service.dart';
 import 'package:flutter_template/widget/pixel.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:load/load.dart';
 
 class BleScanPage extends StatefulWidget {
   @override
@@ -29,12 +31,19 @@ class _BleScanPageState extends State<BleScanPage> {
                   style: GoogleFonts.poppins(fontSize: Pixel.x * 5),
                   textAlign: TextAlign.start,
                 ),
-                onPressed: () => BleService.connect(ble[index]).then(
-                  (value) {
-                    Get.back();
-                    // BleService.getdata(ble[index]);
-                  },
-                ),
+                onPressed: () =>
+                    BleService.connect(ble[index]).whenComplete(() {
+                  Get.back();
+                  Future.delayed(
+                    Duration(seconds: 5),
+                    () => BleService.getdata().then(
+                      (value) {
+                        hideLoadingDialog();
+                        ApiRepository.getschedule();
+                      },
+                    ),
+                  );
+                }),
               )
             ],
           );

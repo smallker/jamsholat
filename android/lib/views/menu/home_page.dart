@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_template/controller/ble_state_ctl.dart';
 import 'package:flutter_template/controller/city_list_ctl.dart';
 import 'package:flutter_template/controller/pray_ctl.dart';
 import 'package:flutter_template/model/pray_schedule.dart';
 import 'package:flutter_template/services/api_repository.dart';
-import 'package:flutter_template/services/ble_service.dart';
 import 'package:flutter_template/widget/color_material.dart';
 import 'package:flutter_template/widget/pixel.dart';
 import 'package:get/get.dart';
@@ -71,21 +69,15 @@ class _HomePageState extends State<HomePage> {
               }),
               GestureDetector(
                 onTap: () => Get.defaultDialog(
-                    title: 'Pilih kota', content: _listview()),
+                  title: 'Pilih kota',
+                  content: _listview(),
+                ),
                 child: Text(
                   'Ganti kota',
                   style: GoogleFonts.poppins(
                       color: Colors.white, fontSize: Pixel.x * 5),
                 ),
               ),
-              GetBuilder<BleStateCtl>(
-                  init: BleStateCtl(),
-                  builder: (ble) {
-                    return FloatingActionButton(
-                      onPressed: () => BleService.scan(),
-                      child: Text('Tes'),
-                    );
-                  })
             ],
           ),
         ),
@@ -184,7 +176,10 @@ class _HomePageState extends State<HomePage> {
     return Container(
       color: ColorMaterial.green,
       child: Column(
-        children: [_top(), _bottom()],
+        children: [
+          _top(),
+          _bottom(),
+        ],
       ),
     );
   }

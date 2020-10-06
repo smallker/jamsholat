@@ -1,15 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_template/model/Config/config_time.dart';
 import 'package:flutter_template/model/config/config_auto.dart';
+import 'package:flutter_template/model/config/config_iqomah.dart';
+import 'package:flutter_template/model/config/config_murrotal.dart';
 import 'package:flutter_template/services/ble_service.dart';
 import 'package:flutter_template/widget/color_material.dart';
-import 'package:flutter_template/widget/custom_button.dart';
 import 'package:flutter_template/widget/pixel.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../model/Config/config_wifi.dart';
 
 class MorePage extends StatelessWidget {
+  _emptyWarning() {
+    return Get.snackbar('Peringatan', 'Semua kolom harus diisi',
+        backgroundColor: Colors.blue, colorText: Colors.white);
+  }
+
+  _confirmButton({Function function}) {
+    return FlatButton.icon(
+      icon: Icon(Icons.check_circle),
+      label: Text('OK'),
+      onPressed: function,
+    );
+  }
+
+  _cancelButton() {
+    return FlatButton.icon(
+      icon: Icon(Icons.cancel),
+      label: Text('Batal'),
+      onPressed: () => Get.back(),
+    );
+  }
+
   _showDatePicker(BuildContext context) async {
     return await showDatePicker(
       context: context,
@@ -70,16 +93,67 @@ class MorePage extends StatelessWidget {
           ),
         ),
       ),
+      cancel: _cancelButton(),
+      confirm: _confirmButton(
+        function: () => BleService.uploadConfig(
+          ConfigWifi.fill(ssid.text, pass.text).toJson(),
+        ).then(
+          (value) => Get.back(),
+        ),
+      ),
+    );
+  }
+
+  _setTimerIqomah() {
+    TextEditingController timer = TextEditingController();
+    return Get.defaultDialog(
+      title: 'Set timer iqomah',
+      content: Container(
+        padding: EdgeInsets.all(Pixel.x * 5),
+        child: TextField(
+          controller: timer,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(hintText: 'menit'),
+        ),
+      ),
+      confirm: _confirmButton(
+        function: () => timer.text.isNullOrBlank
+            ? _emptyWarning()
+            : BleService.uploadConfig(
+                ConfigIqomah.fromInt(
+                  int.tryParse(timer.text),
+                ).toJson(),
+              ),
+      ),
+      cancel: _cancelButton(),
+    );
+  }
+
+  _setTimerMurrotal() {
+    TextEditingController timer = TextEditingController();
+    return Get.defaultDialog(
+      title: 'Set timer murrotal',
+      content: Container(
+        padding: EdgeInsets.all(Pixel.x * 5),
+        child: TextField(
+          controller: timer,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(hintText: 'menit'),
+        ),
+      ),
+      confirm: _confirmButton(
+        function: () => timer.text.isNullOrBlank
+            ? _emptyWarning()
+            : BleService.uploadConfig(
+                ConfigMurrotal.fromInt(
+                  int.tryParse(timer.text),
+                ).toJson(),
+              ),
+      ),
       cancel: FlatButton.icon(
         icon: Icon(Icons.cancel),
         label: Text('Batal'),
         onPressed: () => Get.back(),
-      ),
-      confirm: FlatButton.icon(
-        icon: Icon(Icons.check),
-        label: Text('OK'),
-        onPressed: () => BleService.uploadConfig(
-            ConfigWifi.fill(ssid.text, pass.text).toJson()),
       ),
     );
   }
@@ -95,8 +169,7 @@ class MorePage extends StatelessWidget {
               onMinute.text.isNullOrBlank ||
               offHour.text.isNullOrBlank ||
               offMinute.text.isNullOrBlank
-          ? Get.snackbar('Tidak boleh kosong', 'Isi semua kolom yang tersedia',
-              colorText: Colors.white, backgroundColor: Colors.blue)
+          ? _emptyWarning()
           : BleService.uploadConfig(
               ConfigAuto.fromInt(
                 int.tryParse(onHour.text),
@@ -233,14 +306,20 @@ class MorePage extends StatelessWidget {
               function: () => _showDatePicker(context),
             ),
             _item(
-                icon: Icons.wifi,
-                hint: 'Ganti password wifi',
-                function: () => _wifiSetting()),
+              icon: Icons.wifi,
+              hint: 'Ganti password wifi',
+              function: () => _wifiSetting(),
+            ),
             _item(
-                icon: Icons.queue_music,
-                hint: 'Set timer murrotal',
-                function: null),
-            _item(icon: Icons.timer, hint: 'Set timer iqomah', function: null),
+              icon: Icons.timer,
+              hint: 'Set timer iqomah',
+              function: () => _setTimerIqomah(),
+            ),
+            _item(
+              icon: Icons.queue_music,
+              hint: 'Set timer murrotal',
+              function: () => _setTimerMurrotal(),
+            ),
             _item(
               icon: Icons.power_settings_new,
               hint: 'Jadwal mati & nyala',
@@ -254,7 +333,10 @@ class MorePage extends StatelessWidget {
     return Container(
       color: ColorMaterial.green,
       child: Stack(
-        children: [_title(), _menu()],
+        children: [
+          _title(),
+          _menu(),
+        ],
       ),
     );
   }

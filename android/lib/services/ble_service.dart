@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_template/controller/ble_scan_ctl.dart';
 import 'package:flutter_template/controller/ble_state_ctl.dart';
+import 'package:flutter_template/controller/city_list_ctl.dart';
 import 'package:flutter_template/widget/color_material.dart';
 import 'package:get/get.dart';
 import 'package:load/load.dart';
@@ -35,24 +36,37 @@ class BleService {
   }
 
   static Future<void> connect(BluetoothDevice device) async {
+    showLoadingDialog();
     final ctl = Get.put(BleStateCtl());
     await device.connect();
     await device.requestMtu(512);
-    ctl.updateDevice(device);
-    ctl.updateState(true);
+    await ctl.updateDevice(device);
+    await ctl.updateState(true);
   }
 
-  static Future<void> getdata(BluetoothDevice device) async {
-    await device.discoverServices().then((services) {
-      services.forEach((element) {
-        element.characteristics.forEach((element) async {
-          if (element.uuid == characteristicUuid) {
-            var data = await element.read();
-            print(convertToString(data));
-          }
-        });
-      });
-    });
+  static Future<void> getdata() async {
+    final ctl = Get.put(BleStateCtl());
+    final city = Get.put(CityListCtl());
+    await ctl.device.discoverServices().then(
+      (services) {
+        services.forEach(
+          (service) {
+            service.characteristics.forEach(
+              (chara) async {
+                if (chara.uuid == characteristicUuid) {
+                  var data = await chara.read();
+                  city.updateKota(
+                    city.list.kota.singleWhere(
+                      (element) => element.id == convertToString(data),
+                    ),
+                  );
+                }
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   static Future<void> disconnect(BluetoothDevice device) async {
