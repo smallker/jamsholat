@@ -82,7 +82,7 @@ class _HomePageState extends State<HomePage> {
                   init: BleStateCtl(),
                   builder: (ble) {
                     return FloatingActionButton(
-                      onPressed: () => BleService.getdata(ble.device),
+                      onPressed: () => BleService.scan(),
                       child: Text('Tes'),
                     );
                   })

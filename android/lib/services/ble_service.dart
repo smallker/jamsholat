@@ -8,7 +8,8 @@ import 'package:load/load.dart';
 
 class BleService {
   static FlutterBlue flutterBlue = FlutterBlue.instance;
-  static Guid uid = Guid('beb5483e-36e1-4688-b7f5-ea07361b26a8');
+  static Guid characteristicUuid = Guid('beb5483e-36e1-4688-b7f5-ea07361b26a8');
+  static Guid servicesUuid = Guid('4fafc201-1fb5-459e-8fcc-c5c9c331914b');
   static Future<void> scan() async {
     final BleScanCtl ctl = Get.put(BleScanCtl());
     flutterBlue.isOn.then((value) {
@@ -45,7 +46,7 @@ class BleService {
     await device.discoverServices().then((services) {
       services.forEach((element) {
         element.characteristics.forEach((element) async {
-          if (element.uuid == uid) {
+          if (element.uuid == characteristicUuid) {
             var data = await element.read();
             print(convertToString(data));
           }
@@ -72,14 +73,23 @@ class BleService {
     return String.fromCharCodes(data);
   }
 
-  static Future<void> uploadData() async {
-    showLoadingDialog();
-    // final BleConfigureController _ctl = Get.put(BleConfigureController());
-    // String param = json.encode(_ctl.dev);
-    // List<BluetoothService> services = await _ctl.ble.discoverServices();
-    // var characteristics = services[2].characteristics;
-    // var rx = characteristics[1];
-    // if (rx.uuid != null) await rx.write(_convertToAscii(param));
-    // .then((value) => ApiService.updateLora());
+  static Future<void> uploadConfig(String config) async {
+    print(config);
+    final BleStateCtl _ctl = Get.put(BleStateCtl());
+    try {
+      List<BluetoothService> services = await _ctl.device.discoverServices();
+      services.forEach((service) async {
+        if (service.uuid == servicesUuid) {
+          service.characteristics.forEach((chara) {
+            if (chara.uuid == characteristicUuid) {
+              chara.write(convertToAscii(config));
+            }
+          });
+        }
+      });
+    } catch (e) {
+      Get.snackbar('Terputus', 'Hubungkan dengan kontroller terlebih dahulu',
+          backgroundColor: Colors.white, colorText: Colors.blue);
+    }
   }
 }

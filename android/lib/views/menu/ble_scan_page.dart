@@ -23,16 +23,19 @@ class _BleScanPageState extends State<BleScanPage> {
           return Wrap(
             children: [
               FlatButton.icon(
-                  icon: Icon(Icons.bluetooth),
-                  label: Text(
-                    '${ble[index].name}',
-                    style: GoogleFonts.poppins(fontSize: Pixel.x * 5),
-                    textAlign: TextAlign.start,
-                  ),
-                  onPressed: () => BleService.connect(ble[index]).then((value) {
-                        Get.back();
-                        BleService.getdata(ble[index]);
-                      }))
+                icon: Icon(Icons.bluetooth),
+                label: Text(
+                  ble[index].name.length > 0 ? '${ble[index].name}' : 'no name',
+                  style: GoogleFonts.poppins(fontSize: Pixel.x * 5),
+                  textAlign: TextAlign.start,
+                ),
+                onPressed: () => BleService.connect(ble[index]).then(
+                  (value) {
+                    Get.back();
+                    // BleService.getdata(ble[index]);
+                  },
+                ),
+              )
             ],
           );
         },

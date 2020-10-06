@@ -33,7 +33,18 @@ class _MenuPageState extends State<MenuPage> {
                       title: Text(ble.device.name),
                       leading: Icon(Icons.bluetooth),
                       subtitle: Text('Terhubung'),
-                      onTap: () => BleService.disconnect(ble.device),
+                      onTap: () => Get.defaultDialog(
+                          title: 'Putuskan sambungan?',
+                          content:
+                              Text('Sambungan ke perangkat ini akan terputus'),
+                          confirm: FlatButton(
+                            child: Text('Putus'),
+                            onPressed: () => BleService.disconnect(ble.device),
+                          ),
+                          cancel: FlatButton(
+                            child: Text('Batal'),
+                            onPressed: () => Get.back(),
+                          )),
                     )
                   : BleScanPage();
             }),
