@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "config.h"
+
 void Config::setschedule(String config)
 {
     File file = SPIFFS.open("/sholat.txt", FILE_WRITE);
@@ -121,19 +122,124 @@ String Config::rawConfig()
     file.close();
     return buff;
 }
-String Config::retrieveConfig()
+
+String Config::ssid()
 {
+    File file = SPIFFS.open("/wifi.txt");
+    DynamicJsonDocument content(100);
     String buff;
-    StaticJsonDocument<1000> json;
-    // json["jadwal"] = rawSchedule();
-    json["config"] = rawConfig();
-    serializeJson(json, buff);
-    return buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    return content["ssid"];
+}
+String Config::password()
+{
+    File file = SPIFFS.open("/wifi.txt");
+    DynamicJsonDocument content(100);
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    return content["password"];
 }
 
 void Config::parseConfig(String param)
 {
-    DynamicJsonDocument jadwal(1024);
-    deserializeJson(jadwal, param);
-    int config = jadwal["config"];
+    DynamicJsonDocument content(1024);
+    deserializeJson(content, param);
+    int config = content["config"];
+    if (config == 1)
+    {
+        Serial.println("Mengganti waktu");
+        int minute = content["minute"];
+        int hour = content["hour"];
+        int day = content["day"];
+        int month = content["month"];
+        int year = content["year"];
+        RTC.adjust(DateTime(year, month, day, hour, minute, 0));
+    }
+    if (config == 2)
+    {
+        File file = SPIFFS.open("/wifi.txt", FILE_WRITE);
+        if (file.print(param))
+            Serial.println("Mengganti password wifi");
+        file.close();
+        ESP.restart();
+    }
+    if (config == 3)
+    {
+        File file = SPIFFS.open("/auto.txt", FILE_WRITE);
+        if (file.print(param))
+            Serial.println("Set Scheduler");
+        file.close();
+        ESP.restart();
+    }
+    if (config == 4)
+    {
+        File file = SPIFFS.open("/adzan.txt", FILE_WRITE);
+        if (file.print(param))
+            Serial.println("Set adzan");
+        file.close();
+        ESP.restart();
+    }
+
+    if (config == 5)
+    {
+        File file = SPIFFS.open("/iqomah.txt", FILE_WRITE);
+        if (file.print(param))
+            Serial.println("Set iqomah");
+        file.close();
+        ESP.restart();
+    }
+
+    if (config == 6)
+    {
+        File file = SPIFFS.open("/murrotal.txt", FILE_WRITE);
+        if (file.print(param))
+            Serial.println("Set murrotal");
+        file.close();
+        ESP.restart();
+    }
+
+    if (config == 7)
+    {
+        File file = SPIFFS.open("/kota.txt", FILE_WRITE);
+        if (file.print(param))
+            Serial.println("Set kota");
+        file.close();
+        ESP.restart();
+    }
+}
+
+int Config::kota()
+{
+    File file = SPIFFS.open("/kota.txt");
+    DynamicJsonDocument content(100);
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    return content["kota"];
 }

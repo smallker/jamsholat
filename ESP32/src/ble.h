@@ -65,6 +65,7 @@ public:
     void onConnect(BLEServer *pServer)
     {
         Serial.println(F("ble: Connected ..."));
+        characteristic->setValue(((String)config.kota()).c_str());
         // characteristic->setValue(config.retrieveConfig().c_str());
     };
     void onDisconnect(BLEServer *pServer)
@@ -81,7 +82,12 @@ class ReceiveCallback : public BLECharacteristicCallbacks
     void onWrite(BLECharacteristic *pCharacteristic)
     {
         std::string rxValue = pCharacteristic->getValue();
+        Config config;
         Serial.println(rxValue.c_str());
+        if (rxValue.length() > 2)
+        {
+            config.parseConfig(rxValue.c_str());
+        }
     }
     void onRead(BLECharacteristic *pCharacteristic)
     {

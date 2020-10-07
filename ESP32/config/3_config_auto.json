@@ -1,0 +1,5 @@
+{
+    "config": 2,
+    "schedule_off": [23,0],
+    "schedule_on": [3,0]
+}

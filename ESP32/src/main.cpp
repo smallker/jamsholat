@@ -1,49 +1,4 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <display.h>
-#include <FreeRTOS.h>
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <RTClib.h>
-#include <ArduinoJson.h>
-#include <SPIFFS.h>
-#include <config.h>
-#include "ble.h"
-#include <SPI.h>
-#include <DMD.h>
-#include "SystemFont5x7.h"
-#include "Arial_black_16.h"
-#include <DFRobotDFPlayerMini.h>
-#include <HardwareSerial.h>
-#define DISPLAYS_ACROSS 1
-#define DISPLAYS_DOWN 1
-#define SSID "y"
-#define PASS "11111111"
-#define datapin 26
-#define clockpin 25
-#define latchpin 17
-#define ledpin 0
-#define num_ics 8
-#define rx_pin 16
-#define tx_pin 4
-Display daisy(clockpin, latchpin, datapin, num_ics);
-RTC_DS3231 rtc;
-TaskHandle_t task1;
-TaskHandle_t tasknetwork;
-TaskHandle_t taskble;
-void scanDmd(void *parameter);
-void displayClock(void *parameter);
-void segment(void *parameter);
-void getRtc(void *parameter);
-void connectNetwork(void *parameter);
-void bleService(void *parameter);
-volatile int year, month, day, hour, minute, second;
-int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh, *dhuha;
-
-WaktuSholat waktu;
-BleSetup ble("jam sholat");
-DMD dmd(DISPLAYS_ACROSS, DISPLAYS_DOWN);
-DFRobotDFPlayerMini player;
+#include "main.h"
 void setup()
 {
   Serial.begin(115200);
@@ -53,14 +8,7 @@ void setup()
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-
-  // String config = "{\"adzan\":20,\"iqomah\":21,\"murrotal\":15}";
-  // File file = SPIFFS.open("/config.txt", FILE_WRITE);
-  // if (file.print(config))
-  // {
-  //   Serial.println("Config was written");
-  // }
-  // file.close();
+  
   // if (player.begin(Serial2))
   // {
   //   Serial.println("OK");
@@ -187,8 +135,8 @@ void getRtc(void *parameter)
     hour = now.hour();
     minute = now.minute();
     second = now.second();
-    Serial.println((String)day + "-" + (String)month + "-" + (String)year);
-    Serial.println((String)hour + ":" + (String)minute + ":" + (String)second);
+    // Serial.println((String)day + "-" + (String)month + "-" + (String)year);
+    // Serial.println((String)hour + ":" + (String)minute + ":" + (String)second);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -239,7 +187,8 @@ void displayClock(void *parameter)
 void connectNetwork(void *parameter)
 {
   pinMode(ledpin, OUTPUT);
-  WiFi.begin(SSID, PASS);
+  Config config;
+  WiFi.begin(config.ssid().c_str(), config.password().c_str());
   for (;;)
   {
     if (WiFi.status() != WL_CONNECTED)
@@ -254,7 +203,6 @@ void connectNetwork(void *parameter)
     // if(WiFi.status() == WL_CONNECTED) break;
   }
   vTaskDelay(10000);
-  Config config;
   config.setApiUrl(735, year, month, day);
   String server = config.getApiUrl();
   HTTPClient http;

@@ -3,7 +3,7 @@
 #include "Arduino.h"
 #include "ArduinoJson.h"
 #include "SPIFFS.h"
-
+#include "RTClib.h"
 struct WaktuSholat
 {
     String dzuhur = "dzuhur";
@@ -27,6 +27,7 @@ private:
     String getschedule(String param);
     String rawSchedule();
     String rawConfig();
+    RTC_DS3231 RTC;
 public:
     void setclock(String config);
     void setschedule(String config);
@@ -34,6 +35,8 @@ public:
     void setApiUrl(int city, int year, int month, int day);
     void parseConfig(String json);
     String getApiUrl();
-    String retrieveConfig();
+    String ssid();
+    String password();
+    int kota();
 };
 #endif
