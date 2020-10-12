@@ -94,3 +94,25 @@ void Display::daisy(uint8_t data[])
         }
     }
 }
+void Display::turnOffAll()
+{   
+    for (uint8_t i = 0; i < daisyChain; i++)
+    {
+        for (uint8_t j = 0; j < 8; j++)
+        {
+            // PORTD = 0b00000000; // all low
+            // // digitalWrite(dataPin, (data[i] & (1 << j)));
+            // bool bit = (data[i] & (0x01 << j));
+            // bit == 0? PORTB = 0b00000000 : PORTB = 0b00000001;
+            // PORTD = 0b00000100; // clock pin high
+            // PORTD = 0b00000000; // clock pin low
+            // PORTD = 0b00001000; // latch pin high
+            digitalWrite(clockPin,LOW);
+            digitalWrite(latchPin,LOW);
+            digitalWrite(dataPin, (0xFF & (1 << j)));
+            digitalWrite(clockPin,HIGH);
+            digitalWrite(clockPin,LOW);
+            digitalWrite(latchPin,HIGH);
+        }
+    }
+}

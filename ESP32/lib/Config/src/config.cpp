@@ -3,17 +3,22 @@
 
 void Config::setschedule(String config)
 {
-    File file = SPIFFS.open("/sholat.txt", FILE_WRITE);
-    if (!file)
+    DynamicJsonDocument jadwal(1024);
+    deserializeJson(jadwal, config);
+    if (jadwal["status"] == "ok")
     {
-        Serial.println("config jadwal error");
-        return;
+        File file = SPIFFS.open("/sholat.txt", FILE_WRITE);
+        if (!file)
+        {
+            Serial.println("config jadwal error");
+            return;
+        }
+        if (file.print(config))
+        {
+            Serial.println("Config was written");
+        }
+        file.close();
     }
-    if (file.print(config))
-    {
-        Serial.println("Config was written");
-    }
-    file.close();
 }
 String Config::getschedule(String param)
 {
@@ -218,9 +223,9 @@ void Config::parseConfig(String param)
 
     if (config == 7)
     {
-        File file = SPIFFS.open("/kota.txt", FILE_WRITE);
+        File file = SPIFFS.open("/sholat.txt", FILE_WRITE);
         if (file.print(param))
-            Serial.println("Set kota");
+            Serial.println("Set jadwal");
         file.close();
         ESP.restart();
     }
@@ -228,7 +233,7 @@ void Config::parseConfig(String param)
 
 int Config::kota()
 {
-    File file = SPIFFS.open("/kota.txt");
+    File file = SPIFFS.open("/sholat.txt");
     DynamicJsonDocument content(100);
     String buff;
     if (!file)
@@ -241,5 +246,86 @@ int Config::kota()
     }
     file.close();
     deserializeJson(content, buff);
-    return content["kota"];
+    return content["query"]["kota"];
+}
+
+int *Config::iqomah(int arr[], int param[])
+{
+    File file = SPIFFS.open("/iqomah.txt");
+    DynamicJsonDocument content(100);
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    int timer = content["timer"];
+    param[1] + timer > 60 ? arr[0] = param[0] + 1 : arr[0] = param[0];
+    param[1] + timer > 60 ? arr[1] = param[1] + timer - 60 : arr[1] = param[1] + timer;
+    return arr;
+}
+
+int *Config::murrotal(int arr[], int param[])
+{
+    File file = SPIFFS.open("/murrotal.txt");
+    DynamicJsonDocument content(100);
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    int timer = content["timer"];
+    param[1] < timer ? arr[0] = param[0] - 1 : arr[0] = param[0];
+    param[1] < timer ? arr[1] = param[1] - timer + 60 : arr[1] = param[1] - timer;
+    return arr;
+}
+
+int *Config::autoOn()
+{
+    File file = SPIFFS.open("/auto.txt");
+    DynamicJsonDocument content(100);
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    on[0] = content["on_hour"];
+    on[1] = content["on_minute"];
+    return on;
+}
+int *Config::autoOff()
+{
+    File file = SPIFFS.open("/auto.txt");
+    DynamicJsonDocument content(100);
+    String buff;
+    if (!file)
+    {
+        Serial.println("config jadwal error");
+    }
+    while (file.available())
+    {
+        buff = file.readString();
+    }
+    file.close();
+    deserializeJson(content, buff);
+    off[0] = content["off_hour"];
+    off[1] = content["off_minute"];
+    return off;
 }

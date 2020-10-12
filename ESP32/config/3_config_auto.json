@@ -1,5 +1,7 @@
 {
-    "config": 2,
-    "schedule_off": [23,0],
-    "schedule_on": [3,0]
+    "config": 3,
+    "off_hour": 23,
+    "off_minute":0,
+    "on_hour":8,
+    "on_minute":0
 }

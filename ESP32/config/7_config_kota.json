@@ -1,4 +1,18 @@
 {
-    "config": 6,
-    "kota": 735
+    "config": 7,
+    "status": "ok",
+    "query": {
+        "kota": "735",
+        "tanggal": "2020-09-25"
+    },
+    "jadwal": {
+        "data": {
+            "ashar": "14:43",
+            "dzuhur": "11:33",
+            "imsak": "04:01",
+            "isya": "18:45",
+            "maghrib": "17:37",
+            "subuh": "04:11"
+        }
+    }
 }

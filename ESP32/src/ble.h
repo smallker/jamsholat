@@ -5,6 +5,18 @@
 #include <BLEUtils.h>
 #include <BLEServer.h>
 #include <config.h>
+#include <DFRobotDFPlayerMini.h>
+struct df
+{
+    DFRobotDFPlayerMini player;
+    int adzanSubuh = 1;
+    int adzan = 2;
+    int iqomah = 3;
+    int murrotal = 4;
+    int received = 5;
+    int connected = 6;
+} mp3;
+
 class BleSetup
 {
 private:
@@ -65,6 +77,8 @@ public:
     void onConnect(BLEServer *pServer)
     {
         Serial.println(F("ble: Connected ..."));
+        mp3.player.stop();
+        mp3.player.play(mp3.connected);
         characteristic->setValue(((String)config.kota()).c_str());
         // characteristic->setValue(config.retrieveConfig().c_str());
     };
@@ -84,6 +98,8 @@ class ReceiveCallback : public BLECharacteristicCallbacks
         std::string rxValue = pCharacteristic->getValue();
         Config config;
         Serial.println(rxValue.c_str());
+        mp3.player.stop();
+        mp3.player.play(mp3.received);
         if (rxValue.length() > 2)
         {
             config.parseConfig(rxValue.c_str());

@@ -12,14 +12,27 @@ struct WaktuSholat
     String isya = "isya";
     String imsak = "imsak";
     String subuh = "subuh";
-    String dhuha = "dhuha";
     int _dzuhur[2];
     int _ashar[2];
     int _maghrib[2];
     int _isya[2];
     int _imsak[2];
     int _subuh[2];
-    int _dhuha[2];
+};
+
+struct Iqomah{
+    int dzuhur[2];
+    int ashar[2];
+    int maghrib[2];
+    int isya[2];
+    int subuh[2];
+};
+struct Murrotal{
+    int dzuhur[2];
+    int ashar[2];
+    int maghrib[2];
+    int isya[2];
+    int subuh[2];
 };
 class Config
 {
@@ -28,7 +41,9 @@ private:
     String rawSchedule();
     String rawConfig();
     RTC_DS3231 RTC;
+    int on[2], off[2];
 public:
+    
     void setclock(String config);
     void setschedule(String config);
     int *schedule(String param, int arr[]);
@@ -38,5 +53,9 @@ public:
     String ssid();
     String password();
     int kota();
+    int *iqomah(int arr[],int param[]);
+    int *murrotal(int arr[],int param[]);
+    int *autoOn();
+    int *autoOff();
 };
 #endif

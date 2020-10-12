@@ -17,6 +17,7 @@ public:
     void displayClock(int hour, int minute);
     void displayClock(String time);
     void displayClock(int time[]);
+    void turnOffAll();
 private:
     uint8_t clockPin, latchPin;
     uint8_t dataPin;
