@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_template/controller/city_list_ctl.dart';
 import 'package:flutter_template/controller/pray_ctl.dart';
-import 'package:flutter_template/model/pray_schedule.dart';
 import 'package:flutter_template/services/api_repository.dart';
+import 'package:flutter_template/services/ble_service.dart';
 import 'package:flutter_template/widget/color_material.dart';
 import 'package:flutter_template/widget/pixel.dart';
 import 'package:get/get.dart';
@@ -27,8 +27,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     Widget _listview() {
-      return GetBuilder(
-        builder: (_) {
+      return GetBuilder<PrayCtl>(
+        init: PrayCtl(),
+        builder: (pray) {
           return Container(
             width: Pixel.x * 80,
             height: Pixel.y * 50,
@@ -39,9 +40,14 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     showLoadingDialog();
                     _city.updateKota(_city.list.kota[index]);
-                    ApiRepository.getschedule();
+                    ApiRepository.getschedule().then(
+                      (value) => BleService.uploadConfig(
+                        pray.schedule.toJson(),
+                      ).catchError(
+                        (onError) => print(onError),
+                      ),
+                    );
                     Get.back();
-                    print(prayScheduleToJson(_pray.schedule));
                   },
                   child: Text(_city.list.kota[index].nama),
                 );
@@ -114,16 +120,6 @@ class _HomePageState extends State<HomePage> {
                   textAlign: TextAlign.end,
                 ),
               ),
-              Expanded(
-                flex: 1,
-                child: GestureDetector(
-                  onTap: function,
-                  child: Icon(
-                    Icons.edit,
-                    size: Pixel.x * 4,
-                  ),
-                ),
-              )
             ],
           ),
         ),

@@ -19,7 +19,6 @@ class BleService {
         flutterBlue.stopScan();
         flutterBlue.startScan(timeout: Duration(seconds: 5)).whenComplete(() {
           ctl.updateState(false);
-          hideLoadingDialog();
         });
         flutterBlue.scanResults.listen((results) {
           List<BluetoothDevice> device = [];
@@ -94,11 +93,13 @@ class BleService {
       List<BluetoothService> services = await _ctl.device.discoverServices();
       services.forEach((service) async {
         if (service.uuid == servicesUuid) {
-          service.characteristics.forEach((chara) {
-            if (chara.uuid == characteristicUuid) {
-              chara.write(convertToAscii(config));
-            }
-          });
+          service.characteristics.forEach(
+            (chara) {
+              if (chara.uuid == characteristicUuid) {
+                chara.write(convertToAscii(config));
+              }
+            },
+          );
         }
       });
     } catch (e) {

@@ -16,7 +16,7 @@ class ApiRepository {
     ctl.updateList(result);
   }
 
-  static getschedule({int cityId}) async {
+  static Future<void> getschedule({int cityId}) async {
     final String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final city = Get.put(CityListCtl());
     final pray = Get.put(PrayCtl());
@@ -25,7 +25,7 @@ class ApiRepository {
         : 'https://api.banghasan.com/sholat/format/json/jadwal/kota/$cityId/tanggal/$date';
     var response = await http.get(url);
     try {
-      var result = PraySchedule.fromJson(json.decode(response.body));
+      var result = PraySchedule.fromJson(response.body);
       if (city.kota.id != '0') pray.updateSchedule(result);
     } catch (e) {
       print(e);

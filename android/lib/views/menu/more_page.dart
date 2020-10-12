@@ -123,6 +123,8 @@ class MorePage extends StatelessWidget {
                 ConfigIqomah.fromInt(
                   int.tryParse(timer.text),
                 ).toJson(),
+              ).then(
+                (value) => Get.back(),
               ),
       ),
       cancel: _cancelButton(),
@@ -148,6 +150,8 @@ class MorePage extends StatelessWidget {
                 ConfigMurrotal.fromInt(
                   int.tryParse(timer.text),
                 ).toJson(),
+              ).then(
+                (value) => Get.back(),
               ),
       ),
       cancel: FlatButton.icon(
@@ -253,8 +257,10 @@ class MorePage extends StatelessWidget {
         left: Pixel.x * 14,
         child: Text(
           'Pengaturan',
-          style:
-              GoogleFonts.poppins(color: Colors.white, fontSize: Pixel.x * 5),
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: Pixel.x * 5,
+          ),
         ),
       );
     }

@@ -7,13 +7,17 @@ import 'dart:convert';
 class ConfigAuto {
   ConfigAuto({
     this.config,
-    this.scheduleOff,
-    this.scheduleOn,
+    this.offHour,
+    this.offMinute,
+    this.onHour,
+    this.onMinute,
   });
 
   int config;
-  List<int> scheduleOff;
-  List<int> scheduleOn;
+  int offHour;
+  int offMinute;
+  int onHour;
+  int onMinute;
 
   factory ConfigAuto.fromJson(String str) =>
       ConfigAuto.fromMap(json.decode(str));
@@ -22,18 +26,24 @@ class ConfigAuto {
 
   factory ConfigAuto.fromMap(Map<String, dynamic> json) => ConfigAuto(
         config: json["config"],
-        scheduleOff: List<int>.from(json["schedule_off"].map((x) => x)),
-        scheduleOn: List<int>.from(json["schedule_on"].map((x) => x)),
+        offHour: json["off_hour"],
+        offMinute: json["off_minute"],
+        onHour: json["on_hour"],
+        onMinute: json["on_minute"],
       );
   factory ConfigAuto.fromInt(
-          int hourOn, int minuteOn, int hourOff, int minuteOff) =>
+          int onHour, int onMinute, int offHour, int offMinute) =>
       ConfigAuto(
           config: 3,
-          scheduleOn: [hourOn, minuteOn],
-          scheduleOff: [hourOff, minuteOff]);
+          onHour: onHour,
+          onMinute: onMinute,
+          offHour: offHour,
+          offMinute: offMinute);
   Map<String, dynamic> toMap() => {
         "config": config,
-        "schedule_off": List<dynamic>.from(scheduleOff.map((x) => x)),
-        "schedule_on": List<dynamic>.from(scheduleOn.map((x) => x)),
+        "off_hour": offHour,
+        "off_minute": offMinute,
+        "on_hour": onHour,
+        "on_minute": onMinute,
       };
 }

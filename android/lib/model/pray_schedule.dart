@@ -1,121 +1,117 @@
 import 'dart:convert';
 
-PraySchedule prayScheduleFromJson(String str) =>
-    PraySchedule.fromJson(json.decode(str));
-
-String prayScheduleToJson(PraySchedule data) => json.encode(data.toJson());
-
 class PraySchedule {
   PraySchedule({
+    this.config,
     this.status,
     this.query,
     this.jadwal,
   });
 
+  int config;
   String status;
   Query query;
   Jadwal jadwal;
 
-  factory PraySchedule.fromJson(Map<String, dynamic> json) => PraySchedule(
+  factory PraySchedule.fromJson(String str) =>
+      PraySchedule.fromMap(json.decode(str));
+
+  String toJson() => json.encode(toMap());
+
+  factory PraySchedule.fromMap(Map<String, dynamic> json) => PraySchedule(
+        config: 7,
         status: json["status"],
-        query: Query.fromJson(json["query"]),
-        jadwal: Jadwal.fromJson(json["jadwal"]),
+        query: Query.fromMap(json["query"]),
+        jadwal: Jadwal.fromMap(json["jadwal"]),
       );
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
+        "config": 7,
         "status": status,
-        "query": query.toJson(),
-        "jadwal": jadwal.toJson(),
+        "query": query.toMap(),
+        "jadwal": jadwal.toMap(),
       };
 }
 
 class Jadwal {
   Jadwal({
-    this.status,
     this.data,
   });
 
-  String status;
   Data data;
 
-  factory Jadwal.fromJson(Map<String, dynamic> json) => Jadwal(
-        status: json["status"],
-        data: Data.fromJson(json["data"]),
+  factory Jadwal.fromJson(String str) => Jadwal.fromMap(json.decode(str));
+
+  String toJson() => json.encode(toMap());
+
+  factory Jadwal.fromMap(Map<String, dynamic> json) => Jadwal(
+        data: Data.fromMap(json["data"]),
       );
 
-  Map<String, dynamic> toJson() => {
-        "status": status,
-        "data": data.toJson(),
+  Map<String, dynamic> toMap() => {
+        "data": data.toMap(),
       };
 }
 
 class Data {
   Data({
     this.ashar,
-    this.dhuha,
     this.dzuhur,
     this.imsak,
     this.isya,
     this.maghrib,
     this.subuh,
-    this.tanggal,
-    this.terbit,
   });
 
   String ashar;
-  String dhuha;
   String dzuhur;
   String imsak;
   String isya;
   String maghrib;
   String subuh;
-  String tanggal;
-  String terbit;
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
+  factory Data.fromJson(String str) => Data.fromMap(json.decode(str));
+
+  String toJson() => json.encode(toMap());
+
+  factory Data.fromMap(Map<String, dynamic> json) => Data(
         ashar: json["ashar"],
-        dhuha: json["dhuha"],
         dzuhur: json["dzuhur"],
         imsak: json["imsak"],
         isya: json["isya"],
         maghrib: json["maghrib"],
         subuh: json["subuh"],
-        tanggal: json["tanggal"],
-        terbit: json["terbit"],
       );
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
         "ashar": ashar,
-        "dhuha": dhuha,
         "dzuhur": dzuhur,
         "imsak": imsak,
         "isya": isya,
         "maghrib": maghrib,
         "subuh": subuh,
-        "tanggal": tanggal,
-        "terbit": terbit,
       };
 }
 
 class Query {
   Query({
-    this.format,
     this.kota,
     this.tanggal,
   });
 
-  String format;
   String kota;
   DateTime tanggal;
 
-  factory Query.fromJson(Map<String, dynamic> json) => Query(
-        format: json["format"],
+  factory Query.fromJson(String str) => Query.fromMap(json.decode(str));
+
+  String toJson() => json.encode(toMap());
+
+  factory Query.fromMap(Map<String, dynamic> json) => Query(
         kota: json["kota"],
         tanggal: DateTime.parse(json["tanggal"]),
       );
 
-  Map<String, dynamic> toJson() => {
-        "format": format,
+  Map<String, dynamic> toMap() => {
         "kota": kota,
         "tanggal":
             "${tanggal.year.toString().padLeft(4, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.day.toString().padLeft(2, '0')}",
