@@ -80,7 +80,6 @@ public:
         mp3.player.stop();
         mp3.player.play(mp3.connected);
         characteristic->setValue(((String)config.kota()).c_str());
-        // characteristic->setValue(config.retrieveConfig().c_str());
     };
     void onDisconnect(BLEServer *pServer)
     {

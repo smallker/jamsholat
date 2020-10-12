@@ -3,56 +3,57 @@ void setup()
 {
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, rx_pin, tx_pin);
+  mp3.player.begin(Serial2);
   // if (mp3.player.begin(Serial2))
   //   Serial.println("init dfplayer success");
   // else
   //   Serial.println("dfplayer fail");
-  // mp3.player.begin(Serial2);
   if (!SPIFFS.begin(true))
   {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-  // xTaskCreatePinnedToCore(
-  //     scanDmd,
-  //     "scan SPI",
-  //     5000,
-  //     NULL,
-  //     1,
-  //     &task1,
-  //     0);
-  // xTaskCreatePinnedToCore(
-  //     displayClock,
-  //     "display clock",
-  //     2000,
-  //     NULL,
-  //     1,
-  //     &task1,
-  //     1);
-  // xTaskCreatePinnedToCore(
-  //     segment,
-  //     "7 Segment",
-  //     5000,
-  //     NULL,
-  //     1,
-  //     &task1,
-  //     0);
-  // xTaskCreatePinnedToCore(
-  //     getRtc,
-  //     "GetRtc",
-  //     2000,
-  //     NULL,
-  //     1,
-  //     &task1,
-  //     0);
-  // xTaskCreatePinnedToCore(
-  //     connectNetwork,
-  //     "Network",
-  //     10000,
-  //     NULL,
-  //     1,
-  //     &tasknetwork,
-  //     1);
+  
+  xTaskCreatePinnedToCore(
+      scanDmd,
+      "scan SPI",
+      5000,
+      NULL,
+      1,
+      &task1,
+      0);
+  xTaskCreatePinnedToCore(
+      displayClock,
+      "display clock",
+      2000,
+      NULL,
+      1,
+      &task1,
+      1);
+  xTaskCreatePinnedToCore(
+      segment,
+      "7 Segment",
+      5000,
+      NULL,
+      1,
+      &task1,
+      0);
+  xTaskCreatePinnedToCore(
+      getRtc,
+      "GetRtc",
+      2000,
+      NULL,
+      1,
+      &task1,
+      0);
+  xTaskCreatePinnedToCore(
+      connectNetwork,
+      "Network",
+      10000,
+      NULL,
+      1,
+      &tasknetwork,
+      1);
   xTaskCreatePinnedToCore(
       bleService,
       "BLE",
@@ -61,14 +62,14 @@ void setup()
       1,
       &taskble,
       1);
-  // xTaskCreatePinnedToCore(
-  //     dfplayer,
-  //     "DFplayer",
-  //     5000,
-  //     NULL,
-  //     1,
-  //     &taskDFPlayer,
-  //     1);
+  xTaskCreatePinnedToCore(
+      dfplayer,
+      "DFplayer",
+      5000,
+      NULL,
+      1,
+      &taskDFPlayer,
+      1);
 }
 
 void loop()
@@ -244,6 +245,7 @@ void connectNetwork(void *parameter)
 
 void bleService(void *parameter)
 {
+  
   ble.init();
   ble.pServer->setCallbacks(new ServerCallbacks(ble.pCharacteristic, config));
   ble.pCharacteristic->setCallbacks(new ReceiveCallback());
@@ -269,10 +271,6 @@ void dfplayer(void *parameter)
   int *tartilmaghrib = config.murrotal(tartil.maghrib, maghrib);
   int *tartilisya = config.murrotal(tartil.isya, isya);
   int *tartilsubuh = config.murrotal(tartil.subuh, subuh);
-  Serial.println("adzan subuh  => " + (String)subuh[0] + ":" + (String)subuh[1]);
-  Serial.println("tartil subuh => " + (String)tartilsubuh[0] + ":" + (String)tartilsubuh[1]);
-  Serial.println("iqomah subuh => " + (String)iqosubuh[0] + ":" + (String)iqosubuh[1]);
-  Serial.println("Hari ke : " + (String)dayofweek);
   for (;;)
   {
     if (dayofweek != 5)
