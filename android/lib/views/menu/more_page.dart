@@ -174,16 +174,19 @@ class MorePage extends StatelessWidget {
               offHour.text.isNullOrBlank ||
               offMinute.text.isNullOrBlank
           ? _emptyWarning()
-          : BleService.uploadConfig(
-              ConfigAuto.fromInt(
-                int.tryParse(onHour.text),
-                int.tryParse(onMinute.text),
-                int.tryParse(offHour.text),
-                int.tryParse(offMinute.text),
-              ).toJson(),
-            ).then(
-              (value) => Get.back(),
-            );
+          : int.tryParse(offHour.text) > int.tryParse(onHour.text)
+              ? BleService.uploadConfig(
+                  ConfigAuto.fromInt(
+                    int.tryParse(onHour.text),
+                    int.tryParse(onMinute.text),
+                    int.tryParse(offHour.text),
+                    int.tryParse(offMinute.text),
+                  ).toJson(),
+                ).then(
+                  (value) => Get.back(),
+                )
+              : Get.snackbar('Peringatan',
+                  'jadwal nyala harus lebih dulu dari jadwal mati');
     }
 
     return Get.defaultDialog(
@@ -330,7 +333,12 @@ class MorePage extends StatelessWidget {
               icon: Icons.power_settings_new,
               hint: 'Jadwal mati & nyala',
               function: () => _powerSchedule(context),
-            )
+            ),
+            _item(
+              icon: Icons.power_input,
+              hint: 'Toggle power',
+              function: () => BleService.uploadConfig('toggle'),
+            ),
           ],
         ),
       );
