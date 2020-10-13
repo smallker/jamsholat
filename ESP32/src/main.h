@@ -44,7 +44,6 @@ void bleService(void *parameter);
 void dfplayer(void *paramater);
 volatile int year, month, day, dayofweek, hour, minute, second;
 int *dzuhur, *ashar, *maghrib, *isya, *imsak, *subuh, *dhuha;
-
 WaktuSholat waktu;
 BleSetup ble("jam sholat");
 DMD dmd(DISPLAYS_ACROSS, DISPLAYS_DOWN);

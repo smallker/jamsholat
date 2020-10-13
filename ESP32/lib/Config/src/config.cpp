@@ -229,6 +229,7 @@ void Config::parseConfig(String param)
         file.close();
         ESP.restart();
     }
+
 }
 
 int Config::kota()

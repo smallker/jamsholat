@@ -2,18 +2,20 @@
 void setup()
 {
   Serial.begin(115200);
-  Serial2.begin(9600, SERIAL_8N1, rx_pin, tx_pin);
-  mp3.player.begin(Serial2);
-  // if (mp3.player.begin(Serial2))
-  //   Serial.println("init dfplayer success");
-  // else
-  //   Serial.println("dfplayer fail");
+  // Serial2.begin(9600, SERIAL_8N1, rx_pin, tx_pin);
+  // while (true)
+  // {
+  //   if (mp3.player.begin(Serial2))
+  //     break;
+  //   delay(100);
+  // }
+
   if (!SPIFFS.begin(true))
   {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-  
+
   xTaskCreatePinnedToCore(
       scanDmd,
       "scan SPI",
@@ -100,15 +102,7 @@ void segment(void *parameter)
   Serial.println("Jadwal Nyala => " + (String)on[0] + ":" + (String)on[1]);
   for (;;)
   {
-    if (hour >= off[0] || hour <= on[0])
-    {
-      if (minute >= off[1] || minute <= on[1])
-      {
-        daisy.turnOffAll();
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
-      }
-    }
-    else
+    if (device.isOn == true)
     {
       daisy.daisy(arr1);
       vTaskDelay(del / portTICK_PERIOD_MS);
@@ -118,6 +112,11 @@ void segment(void *parameter)
       vTaskDelay(del / portTICK_PERIOD_MS);
       daisy.daisy(arr4);
       vTaskDelay(del / portTICK_PERIOD_MS);
+    }
+    else
+    {
+      daisy.turnOffAll();
+      vTaskDelay(100);
     }
   }
 }
@@ -130,6 +129,8 @@ void getRtc(void *parameter)
     Serial.flush();
     abort();
   }
+  int *on = config.autoOn();
+  int *off = config.autoOff();
   // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   for (;;)
   {
@@ -141,8 +142,12 @@ void getRtc(void *parameter)
     hour = now.hour();
     minute = now.minute();
     second = now.second();
+
+    if(hour == on[0] && minute == on[1]) device.isOn = true;
+    if(hour == off[0] && minute == off[1]) device.isOn = false;
     Serial.println((String)day + "-" + (String)month + "-" + (String)year);
     Serial.println((String)hour + ":" + (String)minute + ":" + (String)second);
+    Serial.println("Kondisi lampu : "+(String)device.isOn);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -157,24 +162,13 @@ void scanDmd(void *parameter)
 }
 void displayClock(void *parameter)
 {
-  int *on = config.autoOn();
-  int *off = config.autoOff();
   dmd.selectFont(System5x7);
   String h;
   String m;
   String monthOfYear[13] = {"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"};
   for (;;)
   {
-    if (hour >= off[0] || hour <= on[0])
-    {
-      if (minute >= off[1] || minute <= on[1])
-      {
-        Serial.println("JAM MATI");
-        dmd.clearScreen(true);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-      }
-    }
-    else
+    if (device.isOn == true)
     {
       String date = String(day) + " " + monthOfYear[month - 1] + " " + (String)year;
       hour < 10 ? h = "0" + (String)hour : h = (String)hour;
@@ -200,6 +194,11 @@ void displayClock(void *parameter)
           }
         }
       }
+    }
+    else
+    {
+      dmd.clearScreen(true);
+      vTaskDelay(100);
     }
   }
 }
@@ -245,10 +244,19 @@ void connectNetwork(void *parameter)
 
 void bleService(void *parameter)
 {
+  Serial2.begin(9600, SERIAL_8N1, rx_pin, tx_pin);
+  while (true)
+  {
+    if (mp3.player.begin(Serial2)){
+      mp3.isReady = true;
+      break;
+    }
+    vTaskDelay(100/portTICK_PERIOD_MS);
+  }
   
   ble.init();
   ble.pServer->setCallbacks(new ServerCallbacks(ble.pCharacteristic, config));
-  ble.pCharacteristic->setCallbacks(new ReceiveCallback());
+  ble.pCharacteristic->setCallbacks(new ReceiveCallback(config));
   Serial.println("Ble started");
   for (;;)
   {
@@ -271,6 +279,12 @@ void dfplayer(void *parameter)
   int *tartilmaghrib = config.murrotal(tartil.maghrib, maghrib);
   int *tartilisya = config.murrotal(tartil.isya, isya);
   int *tartilsubuh = config.murrotal(tartil.subuh, subuh);
+  while (true)
+  {
+    if(mp3.isReady == true) break;
+    vTaskDelay(100);
+  }
+  
   for (;;)
   {
     if (dayofweek != 5)
@@ -280,8 +294,6 @@ void dfplayer(void *parameter)
         if (minute == dzuhur[M] || minute == ashar[M] || minute == maghrib[M] || minute == isya[M])
         {
           Serial.println("adzan");
-          mp3.player.stop();
-          mp3.player.play(mp3.adzan);
           vTaskDelay(60000 / portTICK_PERIOD_MS);
         }
       }

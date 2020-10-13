@@ -34,6 +34,10 @@ struct Murrotal{
     int isya[2];
     int subuh[2];
 };
+// struct PowerOn{
+//     volatile bool isOn = true;
+// }power;
+
 class Config
 {
 private:
@@ -57,5 +61,6 @@ public:
     int *murrotal(int arr[],int param[]);
     int *autoOn();
     int *autoOff();
+    bool isOn = true;
 };
 #endif

@@ -9,6 +9,7 @@
 struct df
 {
     DFRobotDFPlayerMini player;
+    volatile bool isReady;
     int adzanSubuh = 1;
     int adzan = 2;
     int iqomah = 3;
@@ -16,6 +17,10 @@ struct df
     int received = 5;
     int connected = 6;
 } mp3;
+
+struct Device{
+    volatile bool isOn = true;
+}device;
 
 class BleSetup
 {
@@ -47,7 +52,6 @@ void BleSetup::init()
         BLECharacteristic::PROPERTY_READ |
             BLECharacteristic::PROPERTY_WRITE);
 
-    // pCharacteristic->setValue("Hello World says Neil");
     pService->start();
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(service_uid);
@@ -92,24 +96,26 @@ private:
 };
 class ReceiveCallback : public BLECharacteristicCallbacks
 {
+public:
+    ReceiveCallback(Config _config)
+    {
+        config = _config;
+        Serial.println("executed config callback");
+    }
     void onWrite(BLECharacteristic *pCharacteristic)
     {
         std::string rxValue = pCharacteristic->getValue();
-        Config config;
         Serial.println(rxValue.c_str());
         mp3.player.stop();
         mp3.player.play(mp3.received);
-        if (rxValue.length() > 2)
+        if (rxValue.length() > 7)
         {
             config.parseConfig(rxValue.c_str());
         }
+        else device.isOn = !device.isOn;
     }
-    void onRead(BLECharacteristic *pCharacteristic)
-    {
-        // pCharacteristic->notify();
-        // pCharacteristic->setValue("hello");
-        // pCharacteristic->notify();
-        // pCharacteristic->setValue("world");
-    }
+
+private:
+    Config config;
 };
 #endif
